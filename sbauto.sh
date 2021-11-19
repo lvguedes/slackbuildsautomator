@@ -1,7 +1,13 @@
 #!/bin/bash
+#
+# Copyright (C) 2020-2021 Lucas Vinícius Guedes da Silva
+#
 # command to automate package instalation from slackbuilds.com 
 
 # url="https://slackbuilds.org/reinditory/14.2/desktop/plank/?search=plank"
+
+# exit immediately if some error occurs
+set -e
 
 # **You must 'declare -a URL_ARR' before calling this function
 # Usage: ParseUrl <url>
@@ -57,7 +63,9 @@ function GetName {
 function HasDepsTo {
   local url="${1}"
 
-  if wget -qO /dev/stdout "${url}" | grep 'This requires:'  1>  /dev/null
+  if wget --no-check-certificate \
+	  -qO /dev/stdout "${url}" \
+	  | grep 'This requires:'  1>  /dev/null
   then
     echo true
   else
@@ -73,7 +81,8 @@ function HasDepsTo {
 # "/parc/url/package1 /parc/url/package2 /parc/url/package3"
 # {{{
 function GetDepsStr {
-  wget -qO /dev/stdout "${1}" \
+    wget --no-check-certificate \
+	 -qO /dev/stdout "${1}" \
     | grep 'This requires:' \
     | grep -o "'[^'<>=]\\+'" \
     | tr "\n" " " \
@@ -501,7 +510,8 @@ function GetLinks {
   
   if echo "$searchStr" | grep -i "source" &> /dev/null
   then
-    wget -qO- "$url" \
+    #wget -qO- "$url" \
+    curl -k "$url" \
       | grep -A 10 "$searchStr" \
       | grep -o "href=\".\+\"" \
       | sed 's/href=//g' \
@@ -509,7 +519,8 @@ function GetLinks {
       | sed 's|^/.\+$||g' \
       | tr  '\n' ' '
   else
-    wget -qO- "$url" \
+    #wget -qO- "$url" \
+    curl -k "$url" \
       | grep "$searchStr" \
       | grep -o "href=\".\+\"" \
       | sed 's/href=//g' \
@@ -535,7 +546,7 @@ function DwdFile {
     #read -p "Check the variable value fileLink=\"${fileLink}\"" fooBar
   fi
   
-  wget -P "$outDir" "$fileLink"
+  wget --no-check-certificate -P "$outDir" "$fileLink"
 }
 # }}}
 
